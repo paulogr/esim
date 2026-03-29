@@ -177,6 +177,7 @@ export function mapEsimGoProducts(raw: EsimGoProductList): CanonicalProductBatch
 
         const coverage = mapCoverage(countryCodes);
         const { allowance, throttled } = mapAllowanceAndThrottle(product);
+        const capabilities = mapCapabilities(product.allowances);
 
         const mapped: CanonicalProduct = {
             provider: "esimgo",
@@ -187,10 +188,10 @@ export function mapEsimGoProducts(raw: EsimGoProductList): CanonicalProductBatch
             region: coverage === "REGION" ? resolveRegionFromCountryCodes(countryCodes).region : null,
             allowance,
             throttled,
-            voice: false,
-            sms: false,
-            topup: false,
-            ip: [],
+            voice: capabilities.voice,
+            sms: capabilities.sms,
+            topup: capabilities.topup,
+            ip: capabilities.ip,
             price: decimalToPrice(product.price),
             currency: "USD",
             status: "DRAFT",
@@ -213,6 +214,17 @@ export function mapEsimGoProducts(raw: EsimGoProductList): CanonicalProductBatch
         products,
         countries,
         networks,
+    };
+}
+
+function mapCapabilities(allowances: EsimGoProduct["allowances"]): Pick<CanonicalProduct, "voice" | "sms" | "topup" | "ip"> {
+    const allowanceTypes = new Set(allowances.map((allowance) => allowance.type));
+
+    return {
+        voice: allowanceTypes.has("VOICE"),
+        sms: allowanceTypes.has("SMS"),
+        topup: false,
+        ip: [],
     };
 }
 

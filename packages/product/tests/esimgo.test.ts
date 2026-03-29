@@ -3,6 +3,17 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { loadEsimGoProducts, mapEsimGoProducts } from "../esimgo.ts";
 import type { EsimGoProduct, EsimGoProductList } from "../types.ts";
 
+function makeAllowance(type: string, unit = "MB"): EsimGoProduct["allowances"][number] {
+    return {
+        type,
+        service: "STANDARD",
+        description: `${type} allowance`,
+        amount: 1,
+        unit,
+        unlimited: false,
+    };
+}
+
 function makeProduct(overrides: Partial<EsimGoProduct>): EsimGoProduct {
     return {
         name: "esim_1GB_7D_IT_V2",
@@ -159,6 +170,54 @@ describe("mapEsimGoProducts", () => {
         expect(batch.products[0].status).toBe("DRAFT");
         expect(batch.products[0].validity).toBe(7);
         expect(batch.countries.map((item) => item.code)).toEqual(["IT"]);
+    });
+
+    it("maps canonical capabilities from allowances.type only", () => {
+        const dataOnly = mapEsimGoProducts(
+            wrap([
+                makeProduct({
+                    allowances: [makeAllowance("DATA")],
+                }),
+            ]),
+        );
+
+        expect(dataOnly.products[0].voice).toBe(false);
+        expect(dataOnly.products[0].sms).toBe(false);
+        expect(dataOnly.products[0].topup).toBe(false);
+        expect(dataOnly.products[0].ip).toEqual([]);
+
+        const withVoice = mapEsimGoProducts(
+            wrap([
+                makeProduct({
+                    allowances: [makeAllowance("VOICE", "MINS")],
+                }),
+            ]),
+        );
+
+        expect(withVoice.products[0].voice).toBe(true);
+        expect(withVoice.products[0].sms).toBe(false);
+
+        const withSms = mapEsimGoProducts(
+            wrap([
+                makeProduct({
+                    allowances: [makeAllowance("SMS", "SMS")],
+                }),
+            ]),
+        );
+
+        expect(withSms.products[0].voice).toBe(false);
+        expect(withSms.products[0].sms).toBe(true);
+
+        const withBoth = mapEsimGoProducts(
+            wrap([
+                makeProduct({
+                    allowances: [makeAllowance("VOICE", "MINS"), makeAllowance("SMS", "SMS")],
+                }),
+            ]),
+        );
+
+        expect(withBoth.products[0].voice).toBe(true);
+        expect(withBoth.products[0].sms).toBe(true);
     });
 
     it("maps regional product from roamingEnabled", () => {
