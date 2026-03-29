@@ -123,9 +123,9 @@ export function mapEsimAccessProducts(raw: EsimAccessResponse): CanonicalProduct
             allowance: normalizeBytesToMb(pkg.volume),
             throttled: normalizeNullableText(pkg.fupPolicy),
             voice: false,
-            sms: false,
-            topup: false,
-            ip: [],
+            sms: mapSms(pkg.smsStatus),
+            topup: mapTopup(pkg.supportTopUpType),
+            ip: mapIpExport(pkg.ipExport),
             price: pkg.price,
             currency: normalizeNullableText(pkg.currencyCode) ?? "USD",
             status: "DRAFT",
@@ -237,4 +237,29 @@ function normalizeNullableText(value: string | null | undefined): string | null 
 
 function normalizeNullableValue(value: unknown): string | null {
     return typeof value === "string" ? value : null;
+}
+
+function mapSms(value: number | undefined): boolean {
+    return value === 1;
+}
+
+function mapTopup(value: number | undefined): boolean {
+    return value === 2;
+}
+
+function mapIpExport(value: string | null | undefined): string[] {
+    if (!value) {
+        return [];
+    }
+
+    const unique = new Set<string>();
+
+    for (const item of value.split("/")) {
+        const code = item.trim().toUpperCase();
+        if (code.length > 0) {
+            unique.add(code);
+        }
+    }
+
+    return Array.from(unique);
 }

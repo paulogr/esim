@@ -23,6 +23,9 @@ function makeResponse(overrides: Partial<EsimAccessResponse["obj"]["packageList"
                     location: "DE,FR",
                     locationCode: "EU-30",
                     fupPolicy: "",
+                    smsStatus: 0,
+                    supportTopUpType: 1,
+                    ipExport: "",
                     locationNetworkList: [
                         {
                             locationName: "Germany",
@@ -62,6 +65,38 @@ describe("mapEsimAccessProducts", () => {
         expect(batch.products[0].currency).toBe("USD");
         expect(batch.products[0].validity).toBe(30);
         expect(batch.countries.map((item) => item.code).sort()).toEqual(["DE", "FR"]);
+    });
+
+    it("maps smsStatus values (0/1/2/unknown)", () => {
+        const sms0 = mapEsimAccessProducts(makeResponse({ smsStatus: 0 }));
+        const sms1 = mapEsimAccessProducts(makeResponse({ smsStatus: 1 }));
+        const sms2 = mapEsimAccessProducts(makeResponse({ smsStatus: 2 }));
+        const smsUnknown = mapEsimAccessProducts(makeResponse({ smsStatus: 999 }));
+
+        expect(sms0.products[0].sms).toBe(false);
+        expect(sms1.products[0].sms).toBe(true);
+        expect(sms2.products[0].sms).toBe(false);
+        expect(smsUnknown.products[0].sms).toBe(false);
+    });
+
+    it("maps supportTopUpType values (1/2/unknown)", () => {
+        const topup1 = mapEsimAccessProducts(makeResponse({ supportTopUpType: 1 }));
+        const topup2 = mapEsimAccessProducts(makeResponse({ supportTopUpType: 2 }));
+        const topupUnknown = mapEsimAccessProducts(makeResponse({ supportTopUpType: 999 }));
+
+        expect(topup1.products[0].topup).toBe(false);
+        expect(topup2.products[0].topup).toBe(true);
+        expect(topupUnknown.products[0].topup).toBe(false);
+    });
+
+    it("maps ipExport as uppercase deduped country list", () => {
+        const single = mapEsimAccessProducts(makeResponse({ ipExport: "hk" }));
+        const multi = mapEsimAccessProducts(makeResponse({ ipExport: "nl / FR / nl" }));
+        const empty = mapEsimAccessProducts(makeResponse({ ipExport: "" }));
+
+        expect(single.products[0].ip).toEqual(["HK"]);
+        expect(multi.products[0].ip).toEqual(["NL", "FR"]);
+        expect(empty.products[0].ip).toEqual([]);
     });
 
     it("maps daily single-country package", () => {
