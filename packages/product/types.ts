@@ -112,6 +112,9 @@ export interface EsimAccessPackage {
     location: string;
     locationCode: string;
     fupPolicy: string;
+    smsStatus?: number;
+    supportTopUpType?: number;
+    ipExport?: string | null;
     locationNetworkList: EsimAccessLocationNetwork[];
 }
 
