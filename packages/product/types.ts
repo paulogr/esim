@@ -33,6 +33,8 @@ export interface EsimCardPackage {
     data_quantity: number;
     data_unit: string;
     package_validity: number;
+    voice_quantity: number;
+    sms_quantity: number;
     coverage: EsimCardCoverage[];
     unlimited: boolean;
     throttle: boolean;

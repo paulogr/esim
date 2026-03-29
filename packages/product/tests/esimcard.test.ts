@@ -18,6 +18,8 @@ function makeResponse(overrides: Partial<EsimCardResponse["data"]["countries"][n
                             data_quantity: 5,
                             data_unit: "GB",
                             package_validity: 7,
+                            voice_quantity: 0,
+                            sms_quantity: 0,
                             coverage: [
                                 {
                                     code: "it",
@@ -134,6 +136,34 @@ describe("mapEsimCardProducts", () => {
                 data_quantity: 100,
             }));
         }).toThrow(/Unknown eSIMCard data_unit/);
+    });
+
+    it("maps voice and sms from quantities when positive", () => {
+        const batch = mapEsimCardProducts(makeResponse({
+            voice_quantity: 1,
+            sms_quantity: 2,
+        }));
+
+        expect(batch.products[0].voice).toBe(true);
+        expect(batch.products[0].sms).toBe(true);
+        expect(batch.products[0].topup).toBe(false);
+        expect(batch.products[0].ip).toEqual([]);
+    });
+
+    it("uses strict quantity > 0 for voice and sms", () => {
+        const zeroBatch = mapEsimCardProducts(makeResponse({
+            voice_quantity: 0,
+            sms_quantity: 0,
+        }));
+        const negativeBatch = mapEsimCardProducts(makeResponse({
+            voice_quantity: -1,
+            sms_quantity: -1,
+        }));
+
+        expect(zeroBatch.products[0].voice).toBe(false);
+        expect(zeroBatch.products[0].sms).toBe(false);
+        expect(negativeBatch.products[0].voice).toBe(false);
+        expect(negativeBatch.products[0].sms).toBe(false);
     });
 });
 
