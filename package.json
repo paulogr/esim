@@ -1,0 +1,14 @@
+{
+  "name": "esim",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "typescript": "^6.0.2",
+    "wrangler": "^4.78.0"
+  },
+  "packageManager": "pnpm@10.33.0"
+}
