@@ -20,8 +20,7 @@ type UnlimitedRule = {
     throttled: string;
 };
 
-const ESIMGO_DEFAULT_PER_PAGE = 200;
-const ESIMGO_PAGE_BATCH_SIZE = 3;
+const ESIMGO_PER_PAGE = 6000;
 
 const UNLIMITED_GROUP_RULES: Record<string, UnlimitedRule> = {
     "Standard Unlimited Lite": {
@@ -74,63 +73,16 @@ export interface EsimGoLoadOptions {
 }
 
 export async function loadEsimGoProducts(options: EsimGoLoadOptions): Promise<EsimGoProductList> {
-    const bundles: EsimGoProductList = [];
-    let page = 1;
-    let pageCount: number | null = null;
-
-    while (pageCount === null || page <= pageCount) {
-        const remainingPages = pageCount === null ? ESIMGO_PAGE_BATCH_SIZE : (pageCount - page + 1);
-        if (remainingPages <= 0) {
-            break;
-        }
-
-        const pagesToFetch = Math.min(ESIMGO_PAGE_BATCH_SIZE, remainingPages);
-        const pages = Array.from({ length: pagesToFetch }, (_, index) => page + index);
-        const responses = await Promise.all(
-            pages.map((pageNumber) => fetchEsimGoCataloguePage(options, pageNumber, ESIMGO_DEFAULT_PER_PAGE)),
-        );
-
-        let shouldStop = false;
-
-        for (let index = 0; index < responses.length; index += 1) {
-            const response = responses[index];
-            const pageNumber = pages[index];
-
-            if (pageCount !== null && pageNumber > pageCount) {
-                continue;
-            }
-
-            bundles.push(...response.bundles);
-
-            if (response.pageCount !== null) {
-                pageCount = response.pageCount;
-            } else if (pageCount === null && response.pageSize && response.rows !== null && response.pageSize > 0) {
-                pageCount = Math.ceil(response.rows / response.pageSize);
-            } else if (pageCount === null && response.bundles.length === 0) {
-                shouldStop = true;
-                break;
-            }
-        }
-
-        if (shouldStop) {
-            break;
-        }
-
-        page += pagesToFetch;
-    }
-
-    return bundles;
+    const response = await fetchEsimGoCatalogue(options);
+    return response.bundles;
 }
 
-export async function fetchEsimGoCataloguePage(
+export async function fetchEsimGoCatalogue(
     options: EsimGoLoadOptions,
-    page: number,
-    perPage = ESIMGO_DEFAULT_PER_PAGE,
 ): Promise<EsimGoResponse> {
     const query = {
         ...(options.query ?? {}),
-        page: String(page),
-        perPage: String(perPage),
+        perPage: String(ESIMGO_PER_PAGE),
     };
 
     const requestOptions: LoadProductsOptions<EsimGoResponse> = {

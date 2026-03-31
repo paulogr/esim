@@ -69,26 +69,11 @@ describe("loadEsimGoProducts", () => {
         vi.restoreAllMocks();
     });
 
-    it("loads all pages using pageCount metadata", async () => {
+    it("loads catalogue in a single request with perPage=6000", async () => {
         const fetchMock = vi
             .fn()
             .mockResolvedValueOnce(new Response(JSON.stringify({
-                bundles: [makeRawBundle("page_1")],
-                pageCount: 2,
-                rows: 2,
-                pageSize: 200,
-            }), { status: 200, headers: { "Content-Type": "application/json" } }))
-            .mockResolvedValueOnce(new Response(JSON.stringify({
-                bundles: [makeRawBundle("page_2")],
-                pageCount: 2,
-                rows: 2,
-                pageSize: 200,
-            }), { status: 200, headers: { "Content-Type": "application/json" } }))
-            .mockResolvedValueOnce(new Response(JSON.stringify({
-                bundles: [],
-                pageCount: 2,
-                rows: 2,
-                pageSize: 200,
+                bundles: [makeRawBundle("bundle_1"), makeRawBundle("bundle_2")],
             }), { status: 200, headers: { "Content-Type": "application/json" } }));
 
         vi.stubGlobal("fetch", fetchMock);
@@ -97,45 +82,19 @@ describe("loadEsimGoProducts", () => {
             url: "https://api.esim-go.com/v2.5/catalogue",
             apiKey: "test-key",
             method: "GET",
+            query: {
+                includeHidden: "false",
+            },
         });
 
-        expect(products.map((product) => product.name)).toEqual(["page_1", "page_2"]);
-        expect(fetchMock).toHaveBeenCalledTimes(3);
+        expect(products.map((product) => product.name)).toEqual(["bundle_1", "bundle_2"]);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
 
-        const [firstUrl] = fetchMock.mock.calls[0] as [string, RequestInit];
-        const [secondUrl] = fetchMock.mock.calls[1] as [string, RequestInit];
-        const [thirdUrl] = fetchMock.mock.calls[2] as [string, RequestInit];
-        expect(new URL(firstUrl).searchParams.get("page")).toBe("1");
-        expect(new URL(firstUrl).searchParams.get("perPage")).toBe("200");
-        expect(new URL(secondUrl).searchParams.get("page")).toBe("2");
-        expect(new URL(secondUrl).searchParams.get("perPage")).toBe("200");
-        expect(new URL(thirdUrl).searchParams.get("page")).toBe("3");
-        expect(new URL(thirdUrl).searchParams.get("perPage")).toBe("200");
-    });
-
-    it("falls back to empty-page stop when pageCount is missing", async () => {
-        const fetchMock = vi
-            .fn()
-            .mockResolvedValueOnce(new Response(JSON.stringify({
-                bundles: [makeRawBundle("only_page")],
-            }), { status: 200, headers: { "Content-Type": "application/json" } }))
-            .mockResolvedValueOnce(new Response(JSON.stringify({
-                bundles: [],
-            }), { status: 200, headers: { "Content-Type": "application/json" } }))
-            .mockResolvedValueOnce(new Response(JSON.stringify({
-                bundles: [makeRawBundle("speculative_page")],
-            }), { status: 200, headers: { "Content-Type": "application/json" } }));
-
-        vi.stubGlobal("fetch", fetchMock);
-
-        const products = await loadEsimGoProducts({
-            url: "https://api.esim-go.com/v2.5/catalogue",
-            apiKey: "test-key",
-            method: "GET",
-        });
-
-        expect(products.map((product) => product.name)).toEqual(["only_page"]);
-        expect(fetchMock).toHaveBeenCalledTimes(3);
+        const [requestUrl] = fetchMock.mock.calls[0] as [string, RequestInit];
+        const searchParams = new URL(requestUrl).searchParams;
+        expect(searchParams.get("perPage")).toBe("6000");
+        expect(searchParams.get("includeHidden")).toBe("false");
+        expect(searchParams.has("page")).toBe(false);
     });
 });
 
