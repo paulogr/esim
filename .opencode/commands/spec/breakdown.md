@@ -1,22 +1,15 @@
 ---
-description: Write a spec and decompose it into conflict-free Linear tickets.
+description: Decompose a specification into conflict-free Linear tickets.
+agent: build
+model: openai/gpt-5.2
+subtask: true
 ---
 
-Write a spec and create Linear tickets for: $ARGUMENTS
+Create Linear tickets for: $ARGUMENTS
 
 ## Steps
 
-### 1. Write the spec
-
-Create `specs/<feature-slug>.md` with these sections:
-
-- **Why** — the motivation and problem being solved
-- **What** — the desired outcome and user-facing behaviour
-- **Constraints** — must-have, must-not, and out-of-scope boundaries
-- **Current state** — what exists today and how it works (read the relevant code)
-- **Tasks** — a list of discrete work items (see step 2)
-
-### 2. Decompose into tasks
+### 1. Decompose into tasks
 
 Break the spec into tasks that can each be a single PR. For each task, identify:
 
@@ -24,7 +17,7 @@ Break the spec into tasks that can each be a single PR. For each task, identify:
 - **Description** — what to change, which files, acceptance criteria
 - **Files touched** — list every file the task will modify or create
 
-### 3. Check for file overlaps
+### 2. Check for file overlaps
 
 **This step is critical.** Before creating tickets, build a file-to-task map:
 
@@ -44,7 +37,7 @@ Overlapping tasks that run in parallel **will cause merge conflicts**. Every ove
 
 Present the file-to-task map to the user and flag any overlaps for their decision.
 
-### 4. Create Linear tickets
+### 3. Create Linear tickets
 
 In the **eSIM Reseller Store MVP** project under the **pgrsh** team:
 
@@ -56,7 +49,7 @@ In the **eSIM Reseller Store MVP** project under the **pgrsh** team:
 - A reference to the spec file
 - `blockedBy` set if the task depends on another (from overlap resolution in step 3)
 
-### 5. Output summary
+### 4. Output summary
 
 Show the final task list with:
 
