@@ -9,7 +9,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@paralleldrive/cuid2": "^3.3.0"
+    "@paralleldrive/cuid2": "^3.3.0",
+    "hono": "^4.10.4",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "vitest": "^4.1.2"
