@@ -35,9 +35,10 @@
     "consumers": [
       {
         "queue": "esim-product-ingest",
+        "dead_letter_queue": "esim-product-ingest-dlq",
         "max_batch_size": 1,
         "max_retries": 2,
-        "dead_letter_queue": "esim-product-ingest-dlq"
+        "max_concurrency": 10
       }
     ]
   }

@@ -201,3 +201,7 @@ export interface PersistInput {
     provider: Provider;
     batch: CanonicalProductBatch;
 }
+
+export type ProductIngestMessage = {
+    provider: Provider;
+};
