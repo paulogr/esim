@@ -1,7 +1,7 @@
 ---
 description: Pick up a Linear issue, gather context, branch, implement, and PR.
 agent: build
-model: openai/gpt-5.3-codex
+model: openai/gpt-5.4
 ---
 
 # Implementation Workflow

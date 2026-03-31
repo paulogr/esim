@@ -1,7 +1,7 @@
 ---
 description: Decompose a specification into conflict-free Linear tickets.
 agent: build
-model: openai/gpt-5.2
+model: openai/gpt-5.4
 subtask: true
 ---
 

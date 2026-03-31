@@ -16,6 +16,7 @@
 
 ### Competitor sellers
 
+- https://easyalo.com/
 - https://saily.com/
 - https://mobimatter.com/
 - https://esim.dog/
