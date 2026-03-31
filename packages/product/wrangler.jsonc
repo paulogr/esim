@@ -24,10 +24,26 @@
       "database_name": "esim-product",
       "database_id": "c22e8be3-f7a0-42ec-b76e-65ea4008da90"
     }
-  ]
+  ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "PRODUCT_INGEST_QUEUE",
+        "queue": "esim-product-ingest"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "esim-product-ingest",
+        "max_batch_size": 1,
+        "max_retries": 2,
+        "dead_letter_queue": "esim-product-ingest-dlq"
+      }
+    ]
+  }
   /**
-         * Smart Placement
-         * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
+          * Smart Placement
+          * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
          */
   // "placement": {  "mode": "smart" }
   /**
