@@ -1,3 +1,4 @@
+import { app } from "./api.ts";
 import { persistBatch } from "./db.ts";
 import { loadEsimAccessProducts, mapEsimAccessProducts } from "./esimaccess.ts";
 import { loadEsimCardProducts, mapEsimCardProducts } from "./esimcard.ts";
@@ -13,6 +14,9 @@ const RETRY_MAX_DELAY_SECONDS = 300;
 const TIMEOUT_MS = 120 * 1000
 
 export default {
+    async fetch(request: Request, env: Env, ctx: ExecutionContext) {
+        return app.fetch(request, env, ctx);
+    },
     async scheduled(_controller: ScheduledController, env: Env, _ctx: ExecutionContext) {
         await Promise.all(INGEST_PROVIDERS.map((provider) => env.PRODUCT_INGEST_QUEUE.send({ provider })));
     },
